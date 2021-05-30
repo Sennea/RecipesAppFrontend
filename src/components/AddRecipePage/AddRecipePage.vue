@@ -1,421 +1,423 @@
 <template>
-  <div class="adminPageWrapper">
-    <div>
-      <h4>Select what You want to add</h4>
-      <div>
-        <select class="selectBox" v-model="selectedOption">
-          <option>Recipe</option>
-          <option>Category</option>
-          <option>Ingredient</option>
-        </select>
-      </div>
-    </div>
-    <div v-if="selectedOption === 'Category'">
-      <div class="optionsWrapper">
-        <label for="categoryTitle">Provide category title</label>
-        <input
-          class="input"
-          v-model="categoryTitle"
-          id="categoryTitle"
-          type="text"
-        />
-      </div>
-    </div>
+  <div class="addPageWrapper">
+    <Input label="Title" type="text" @change="updateRecipeTitle($event)" />
+    <Input
+      label="Description"
+      type="text"
+      @change="updateRecipeDescription($event)"
+    />
+    <Input label="ImageUrl" type="text" @change="updateRecipeImage($event)" />
 
-    <div v-if="selectedOption === 'Ingredient'">
-      <div class="optionsWrapper">
-        <label for="ingredientName">Provide ingredient name</label>
-        <input
-          class="input"
-          v-model="ingredientName"
-          id="ingredientName"
-          type="text"
-        />
-      </div>
-    </div>
-
-    <div v-if="selectedOption === 'Recipe'">
-      <div class="optionsWrapper">
-        <div class="fieldWrapper">
-          <label for="recipeTitle">Provide recipe title</label>
-          <input
-            class="input"
-            v-model="recipeTitle"
-            id="recipeTitle"
-            type="text"
-          />
-        </div>
-
-        <div class="fieldWrapper">
-          <label for="recipeDescription">Provide recipe description</label>
-          <textarea
-            class="input"
-            v-model="recipeDescription"
-            id="recipeDescription"
-            type="text"
-          />
-        </div>
-
-        <div class="fieldWrapper">
-          <label for="recipeImage">Provide recipe image url</label>
-          <input
-            class="input"
-            v-model="recipeImage"
-            id="recipeImage"
-            type="text"
-          />
-        </div>
-
-        <div class="fieldWrapper">
-          <label for="recipeTitle">Provide recipe categories</label>
-          <div
-            class="specificOptionInfoWrapper"
-            v-for="(recipeCategory, index) in recipeCategories"
-            :key="index"
-          >
-            <div class="specificOptionWrapperWithDelete">
-              <input
-                @change="upadateRecipeCategory($event, index)"
-                id="recipeTitle"
-                type="text"
-                class="multipleInput"
-              />
-              <button
-                class="specificOptionDeleteButton"
-                @click="deleteRecipeCategory(index)"
-              >
-                X
-              </button>
-            </div>
-          </div>
-          <button class="addMoreButton" @click="moreRecipeCategories()">
-            Add another
-          </button>
-        </div>
-
-        <div class="fieldWrapper">
-          <label for="recipeIngredient">Provide recipe ingredients</label>
-          <div
-            class="specificOptionInfoWrapper"
-            v-for="(recipeIngredient, index) in recipeIngredients"
-            :key="index"
-          >
-            <div class="specificOptionWrapperWithDelete">
-              <div class="specificOptionWrapper">
-                  <label for="recipeIngredientName">Name</label>
-                  <input
-                    class="multipleInput"
-                    @change="
-                      upadateRecipeIngredient($event, index, 'ingredient')
-                    "
-                    id="recipeIngredientName"
-                    type="text"
-                  />
-                  <label for="recipeIngredientQuantity">Quantity</label>
-                  <input
-                    class="multipleInput"
-                    @change="upadateRecipeIngredient($event, index, 'quantity')"
-                    id="recipeIngredientQuantity"
-                    type="text"
-                  />
-                  <label for="recipeIngredientUnit">Unit</label>
-                  <select
-                    :class="['selectBox', 'selectBoxInner']"
-                    @change="upadateRecipeIngredient($event, index, 'unit')"
-                    if="recipeIngredientUnit"
-                  >
-                    <option>g</option>
-                    <option>dag</option>
-                    <option>kg</option>
-                    <option>ml</option>
-                    <option>l</option>
-                  </select>
-                </div>
-                <button
-                  class="specificOptionDeleteButton"
-                  @click="deleteRecipeIngredient(index)"
-                >
-                  X
-                </button>
-              </div>
-            </div>
-            <button class="addMoreButton" @click="moreRecipeIngredients()">
-              Add another
-            </button>
-          </div>
-      </div>
-    </div>
-
-    <button v-if="selectedOption" @click="onSubmit()" class="submitButton">
-      SUBMIT
-    </button>
+    <MultipleSelection
+      @fieldChanged="updateRecipePreparationTime($event)"
+      title="Preparation"
+      v-bind:fields="[
+        { title: 'Time', input: true },
+        { title: 'Unit', select: true, options: availableTimeUnits },
+      ]"
+    />
+    <MultipleSelection
+      @fieldChanged="updateRecipeIngredients($event)"
+      title="Ingredients"
+      v-bind:fields="[
+        { title: 'Existing', select: true, options: availableIngredients },
+        { title: 'Amout', input: true },
+        { title: 'Unit', select: true, options: availableUnits },
+        { title: 'More', button: true },
+      ]"
+      :amount="ingredientsAmount"
+    />
+    <MultipleSelection
+      @fieldChanged="updateRecipeCategories($event)"
+      title="Categories"
+      v-bind:fields="[
+        { title: 'Existing', select: true, options: availableCategories },
+        { title: 'More', button: true },
+      ]"
+      :amount="categoriesAmount"
+    />
+    <MultipleSelection
+      @fieldChanged="updateRecipeSteps($event)"
+      title="Steps"
+      v-bind:fields="[
+        { title: 'Description', textarea: true },
+        { title: 'Order', select: true, options: availableRecipeOrder },
+        { title: 'More', button: true },
+      ]"
+      :amount="stepsAmount"
+    />
+    <button @click="onSubmit()">Post Recipe</button>
   </div>
 </template>
 
 <script>
+import Input from "../Authorization/Input.vue";
+import MultipleSelection from "./MultipleSelection.vue";
 export default {
   name: "AddRecipePage",
+  components: { Input, MultipleSelection },
   props: ["title"],
   data() {
     return {
-      selectedOption: "",
-      recipeIngredients: [{ ingredient: "", quantity: 0, unit: "g" }],
-      recipeCategories: [{ name: "" }],
-      categoryTitle: "",
-      ingredientName: "",
-      recipeTitle: "",
-      recipeDescription: "",
-      recipeImage: "",
       token: "",
+      newRecipe: {
+        ingredients: [],
+        categories: [],
+        steps: [],
+      },
+      categoriesAmount: 1,
+      ingredientsAmount: 1,
+      stepsAmount: 1,
+      newCategory: "",
+      availableTimeUnits: ["", "minutes", "hours"],
+      availableIngredients: [1, 2, 3, 4, 5, 6],
+      availableCategories: [],
+      availableRecipeOrder: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      availableUnits: ['', 'pinch', 'teaspoon', 'tablespoon', 'piece', 'kg', 'gram'],
+      availableCategoriesWithIds: [],
+      availableIngredientsWithIds: [],
+      availableUnitsWithIds: {'pinch': 6, 'teaspoon': 5, 'tablespoon': 4, 'piece': 3, 'kg': 2, 'gram': 1},
+      recipeToPost: {}
     };
   },
   created() {
-    if(!this.$cookies.isKey("recipes-token")){
+    if (!this.$cookies.isKey("recipes-token")) {
       this.$router.push("/auth/login");
       return;
     }
+    console.log("TOKEEEEN ", this.$cookies.get("recipes-token"));
     this.token = this.$cookies.get("recipes-token");
+    this.fetchAvailableCategories();
+    this.fetchAvailableIngredients()
   },
   methods: {
-    moreRecipeIngredients() {
-      this.recipeIngredients.push({ ingredient: "", quantity: 0, unit: "g" });
+    updateRecipeTitle(event) {
+      this.newRecipe = {
+        ...this.newRecipe,
+        title: event && event.target.value,
+      };
+      console.log("NDAKNKDAKNSDS", this.newRecipe);
     },
-    deleteRecipeIngredient(index) {
-      this.recipeIngredients = this.recipeIngredients.splice(index);
+    updateRecipeDescription(event) {
+      this.newRecipe = {
+        ...this.newRecipe,
+        description: event && event.target.value,
+      };
+      console.log("NDAKNKDAKNSDS", this.newRecipe);
     },
-    moreRecipeCategories() {
-      this.recipeCategories.push({ name: "" });
+    updateRecipeImage(event) {
+      this.newRecipe = {
+        ...this.newRecipe,
+        imageUrl: event && event.target.value,
+      };
+      console.log("NDAKNKDAKNSDS", this.newRecipe);
     },
-    deleteRecipeCategory(index) {
-      this.recipeCategories = this.recipeCategories.splice(index);
-    },
-    upadateRecipeCategory(event, index) {
-      this.recipeCategories[index].name = event ? event.target.value : "";
-    },
-    upadateRecipeIngredient(event, index, field) {
-      this.recipeIngredients[index][field] = event ? event.target.value : "";
-    },
-    postIngredient() {
-      fetch(`http://127.0.0.1:8000/api/ingredients/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${this.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: this.ingredientName,
-        }),
-      })
-        .then((res) => res.json())
-        .then((res) => {
-          console.log("RES", res);
-        })
-        .catch((err) => console.log(err));
-    },
-    postCategory() {
-      fetch(`http://127.0.0.1:8000/api/categories/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${this.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: this.categoryTitle,
-        }),
-      })
-        .then((res) => res.json())
-        .then((res) => {
-          console.log("RES", res);
-        })
-        .catch((err) => console.log(err));
-    },
-    postRecipe() {
-      fetch(`http://127.0.0.1:8000/api/recipes/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${this.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: this.recipeTitle,
-          imageUrl: this.recipeImage,
-          description: this.recipeDescription,
-        }),
-      })
-        .then((res) => res.json())
-        .then((res) => {
-          console.log("RES", res);
-        })
-        .catch((err) => console.log(err));
-    },
-    postRecipeCategories() {
-      fetch(`http://127.0.0.1:8000/api/recipes/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${this.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: this.categoryTitle,
-        }),
-      })
-        .then((res) => res.json())
-        .then((res) => {
-          console.log("RES", res);
-        })
-        .catch((err) => console.log(err));
-    },
-    postRecipeIngredients() {
-      fetch(`http://127.0.0.1:8000/api/recipes/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${this.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: this.categoryTitle,
-        }),
-      })
-        .then((res) => res.json())
-        .then((res) => {
-          console.log("RES", res);
-        })
-        .catch((err) => console.log(err));
-    },
-    onSubmit() {
-      console.log("", `Token ${this.$cookies.get("recipes-token")}`);
-      this.token = this.$cookies.get("recipes-token");
-      switch (this.selectedOption) {
-        case "Ingredient":
-          this.postIngredient();
+
+    updateRecipePreparationTime(event) {
+      switch (event.title) {
+        case "Time": {
+          this.newRecipe = {
+            ...this.newRecipe,
+            preparationTime: event.event,
+          };
           break;
-        case "Category":
-          this.postCategory();
-          break;
-        case "Recipe": {
-          this.postRecipe();
+        }
+        case "Unit": {
+          this.newRecipe = {
+            ...this.newRecipe,
+            preparationTimeUnit: event.event,
+          };
           break;
         }
         default:
           break;
       }
+      console.log("NDAKNKDAKNSDS", this.newRecipe);
+    },
+    updateRecipeIngredients(event) {
+      console.log('EVEVVEEVE', event)
+      switch (event.title) {
+        case "Existing": {
+          if (
+            this.newRecipe.ingredients.length &&
+            this.newRecipe.ingredients[event.index]
+          ) {
+            this.newRecipe.ingredients[event.index].existing = event.event;
+          } else {
+            this.newRecipe = {
+              ...this.newRecipe,
+              ingredients: [
+                ...(this.newRecipe.ingredients || []),
+                {
+                  existing: event.event,
+                },
+              ],
+            };
+          }
+          break;
+        }
+        case "New": {
+          if (
+            this.newRecipe.ingredients.length &&
+            this.newRecipe.ingredients[event.index]
+          ) {
+            this.newRecipe.ingredients[event.index].new = event.event;
+          } else {
+            this.newRecipe = {
+              ...this.newRecipe,
+              ingredients: [
+                ...(this.newRecipe.ingredients || []),
+                {
+                  new: event.event,
+                },
+              ],
+            };
+          }
+          break;
+        }
+        case "Amount": {
+          if (
+            this.newRecipe.ingredients.length &&
+            this.newRecipe.ingredients[event.index]
+          ) {
+            this.newRecipe.ingredients[event.index].quantity = event.event;
+          } else {
+            this.newRecipe = {
+              ...this.newRecipe,
+              ingredients: [
+                ...(this.newRecipe.ingredients || []),
+                {
+                  quantity: event.event,
+                },
+              ],
+            };
+          }
+          break;
+        }
+        case "Unit": {
+          if (
+            this.newRecipe.ingredients.length &&
+            this.newRecipe.ingredients[event.index]
+          ) {
+            console.log('this.availableUnitsWithIds[event.event]', this.availableUnitsWithIds[event.event]);
+            console.log('EVENT ', event.event);
+            console.log('ALLLLL ', this.availableUnitsWithIds)
+            this.newRecipe.ingredients[event.index].unit = this.availableUnitsWithIds[event.event];
+          } else {
+            this.newRecipe = {
+              ...this.newRecipe,
+              ingredients: [
+                ...(this.newRecipe.ingredients || []),
+                {
+                  unit: this.availableUnitsWithIds[event.event],
+                },
+              ],
+            };
+          }
+          break;
+        }
+        case "More": {
+          this.ingredientsAmount = this.ingredientsAmount + 1;
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+      console.log('ELOO ', this.newRecipe)
+    },
+    updateRecipeCategories(event) {
+      console.log('EVENT', event)
+      switch (event.title) {
+        case "Existing": {
+          if (
+            this.newRecipe.categories.length &&
+            this.newRecipe.categories[event.index]
+          ) {
+            this.newRecipe.categories[event.index].existing = event.event;
+          } else {
+            this.newRecipe = {
+              ...this.newRecipe,
+              categories: [
+                ...(this.newRecipe.categories || []),
+                {
+                  existing: event.event,
+                },
+              ],
+            };
+          }
+          break;
+        }
+        case "New": {
+          if (
+            this.newRecipe.categories.length &&
+            this.newRecipe.categories[event.index]
+          ) {
+            this.newRecipe.categories[event.index].new = event.event;
+          } else {
+            this.newRecipe = {
+              ...this.newRecipe,
+              categories: [
+                ...(this.newRecipe.categories || []),
+                {
+                  new: event.event,
+                },
+              ],
+            };
+          }
+          break;
+        }
+        case "More": {
+          this.categoriesAmount = this.categoriesAmount + 1;
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+      console.log("NDAKNKDAKNSDS", this.newRecipe);
+    },
+    updateRecipeSteps(event) {
+      switch (event.title) {
+        case "Description": {
+          if (
+            this.newRecipe.steps.length &&
+            this.newRecipe.steps[event.index]
+          ) {
+            this.newRecipe.steps[event.index].existing = event.event;
+          } else {
+            this.newRecipe = {
+              ...this.newRecipe,
+              steps: [
+                ...(this.newRecipe.steps || []),
+                {
+                  description: event.event,
+                },
+              ],
+            };
+          }
+          break;
+        }
+        case "Order": {
+          if (
+            this.newRecipe.steps.length &&
+            this.newRecipe.steps[event.index]
+          ) {
+            this.newRecipe.steps[event.index].order = event.event;
+          } else {
+            this.newRecipe = {
+              ...this.newRecipe,
+              steps: [
+                ...(this.newRecipe.steps || []),
+                {
+                  order: event.event,
+                },
+              ],
+            };
+          }
+          break;
+        }
+        case "More": {
+          this.stepsAmount = this.stepsAmount + 1;
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+      console.log('DJWADWDa', this.newRecipe)
+    },
+    postRecipe() {
+      console.log('recipeToPost', this.recipeToPost)
+      fetch(`http://127.0.0.1:8000/api/recipes/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(this.recipeToPost),
+      })
+        .then((res) => res.json())
+        .catch((err) => console.log(err));
+    },
+    onSubmit() {
+      this.token = this.$cookies.get("recipes-token");
+                const prepared = {
+            title: this.newRecipe.title,
+            description: this.newRecipe.description,
+            imageUrl: this.newRecipe.imageUrl,
+            level: 2,
+            preparationTime: this.newRecipe.preparationTime,
+            preparationTimeUnit: this.newRecipe.preparationTimeUnit,
+            steps: this.newRecipe.steps.map(step => ({
+              description: step.description,
+              order: step.order
+            })),
+            categories: [],
+            ingredients: []
+          }
+          this.newRecipe.categories.forEach(category => {
+            if(category.existing) {
+              prepared.categories.push(this.availableCategoriesWithIds.find(c => c.name === category.existing).id);
+
+            }
+          })
+
+          this.newRecipe.ingredients.forEach(ingredient => {
+            if(ingredient.existing) {
+              const find = this.availableIngredientsWithIds.find(c => c.name === ingredient.existing);
+              prepared.ingredients.push({
+                ingredient: find.id,
+                quantity: 1,
+                unit: ingredient.unit
+              })
+            }
+          })
+
+          this.recipeToPost = prepared;
+          this.postRecipe();
+    },
+        fetchAvailableCategories() {
+      fetch(`http://127.0.0.1:8000/api/categories/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          const allCategories = res.map(r => r.name);
+          this.availableCategories = allCategories;
+          this.availableCategoriesWithIds = res;
+        })
+        .catch((err) => console.log(err));
+    },
+
+    fetchAvailableIngredients() {
+      fetch(`http://127.0.0.1:8000/api/ingredients/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          console.log('dASDASDAS', res);
+          const alIngredients = res.map(r => r.name);
+          this.availableIngredients = alIngredients;
+          this.availableIngredientsWithIds = res;
+        })
+        .catch((err) => console.log(err));
     },
   },
 };
 </script>
 
 <style scoped>
-.adminPageWrapper {
-  height: auto;
-  width: 70%;
-  margin: auto;
-  padding: 90px 10px 40px;
-}
-
-.optionsWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: baseline;
-  margin: 20px auto 0;
-}
-
-.specificOptionWrapper {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  align-items: baseline;
-}
-
-.specificOptionInfoWrapper {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  padding: 0 10px 10px 10px;
-  margin-top: 10px;
-}
-
-.specificOptionWrapperWithDelete {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-top: 10px;
-  width: 100%;
-}
-
-.selectBox {
-  width: 100%;
-  background: rgb(130, 162, 192);
-  border: 0px;
-  border-radius: 10px;
-  padding: 5px;
-}
-
-.selectBoxInner {
-  background: white
-}
-
-.input {
-  padding: 5px;
-  border-radius: 10px;
-  margin: 5px 0 20px;
-  width: 100%;
-  background-color: white;
-  border: 0px;
-  box-shadow: 0 0 5px rgb(0, 20, 15);
-}
-
-.multipleInput {
-  padding: 5px;
-  border-radius: 10px;
-  width: 100%;
-  background-color: white;
-  border: 0px;
-  box-shadow: 0 0 5px rgb(0, 20, 15);
-}
-
-.specificOptionDeleteButton {
-  border-radius: 10px;
-  border: 0px;
-  height: 20px;
-  background-color: white;
-  box-shadow: 0 0 5px rgb(0, 20, 15);
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  margin-left: 10px;
-}
-
-.addMoreButton {
-  border-radius: 10px;
-  width: 100%;
-  border: 0px;
-  margin: 10px 0 20px;
-  padding: 5px;
-  background-color: white;
-  box-shadow: 0 0 5px rgb(0, 20, 15);
-  cursor: pointer;
-}
-
-.submitButton {
-  border: 0px;
-  border-radius: 10px;
-  margin-top: 20px;
-  width: 100%;
-  cursor: pointer;
-  background-color: rgb(130, 162, 192);
-  box-shadow: 0 0 5px black;
-  padding: 5px;
-  margin-bottom: 20px;
-}
-
-.fieldWrapper {
-  background-color: rgb(130, 162, 192);
-  width: 100%;
-  padding: 20px;
-}
-
-.fieldWrapper:nth-of-type(2n + 2) {
-  background-color: rgb(161, 178, 194)
+.addPageWrapper {
+  margin-top: 150px;
+  height: 100%;
 }
 </style>

@@ -13,14 +13,21 @@
           label="Search"
           @change="updateSearchPhrase($event)"
         />
-        <p>Filter......</p>
+        <div>
+          <select @change="filterRecipes($event)">
+            <option v-for="(option, index) in options" :key="index">{{
+              option
+            }}</option>
+          </select>
+        </div>
       </div>
-      <GridHeader :title="title" @clicked="goToHome()" />
+      <GridHeader :title="title" @clicked="goToHome()" simple="true" />
       <div class="allGridWrapper">
         <div class="firsTwoRowsWrapper">
           <div class="collectionWrapper">
             <div class="bigFirstSlot">
               <RecipeItem
+                @addToFavourites="handleItemAddToFavourites(items[0].id)"
                 gridStyle="square"
                 size="big"
                 :item="items[0]"
@@ -36,6 +43,7 @@
             >
               <div class="smallSlot">
                 <RecipeItem
+                  @addToFavourites="handleItemAddToFavourites(item.id)"
                   gridStyle="square"
                   :item="item"
                   @clicked="handleItemClick(item.id)"
@@ -78,80 +86,185 @@ import Input from "../Authorization/Input";
 export default {
   components: { GridHeader, RecipeItem, Navigation, Input },
   name: "FourGrid",
-  props: ["movie", "favorites"],
+  props: [],
   data() {
     return {
-      title: '',
+      title: "",
       token: "",
       items: [],
+      options: [
+        "User Rating Ascending",
+        "User Rating Descending",
+        "Name Ascending",
+        "Name Descending",
+        "Date Added Ascending",
+        "Date AddedDescending",
+      ],
       availableCategories: [],
-    }
+    };
   },
   created() {
-    this.initUpdate()
+    this.initUpdate();
   },
-   methods: {
+  methods: {
     initUpdate() {
-if(!this.$cookies.isKey("recipes-token")){
-      this.$router.push("/auth/login");
-      return;
-    }
+      if (!this.$cookies.isKey("recipes-token")) {
+        this.$router.push("/auth/login");
+        return;
+      }
 
-    this.token = this.$cookies.get("recipes-token");
-
-    if(this.favories) {
-      this.getUserFavorites();
-    }
-
-    this.title = this.$route.params.name;
-    this.getRecipes();
+      this.token = this.$cookies.get("recipes-token");
+      this.title = this.$route.params.name;
+      this.getRecipes();
     },
+
+handleItemAddToFavourites(id) {
+      console.log('ELOOOOO ', id);
+      fetch(`http://127.0.0.1:8000/api/recipes/${id}/favourite/`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${this.token}`,
+              },
+            })
+              .then((res) => res.json())
+              .then((res) => {
+                console.log('REEES', res);
+              })
+              .catch((err) => console.log(err));
+          },
     goToHome() {
-       this.$router.push("/");
+      this.$router.push("/");
     },
-     navCategoryClicked(title) {
+    navCategoryClicked(title) {
       this.$router.push(`/category/${title}`);
-      this.initUpdate()
+      this.initUpdate();
     },
     handleItemClick(id) {
       this.$router.push(`/recipe/${id}`);
+    },
+    filterRecipes(event) {
+      if (!event) return;
+      switch (event.target.value) {
+        case "User Rating Ascending": {
+          this.items = this.items.sort(
+            (a, b) => {
+              const cond = a.avg_rating < b.avg_rating
+                if(cond) {
+                  return 1;
+                }else {
+                  return -1;
+                }
+              }
+          );
+          break;
+        }
+        case "User Rating Descending": {
+          this.items = this.items.sort(
+            (a, b) => {
+              const cond = a.avg_rating < b.avg_rating
+                if(cond) {
+                  return 1;
+                }else {
+                  return -1;
+                }
+              }
+          );
+
+          break;
+        }
+        case "Name Ascending": {
+          this.items = this.items.sort(
+            (a, b) => {
+              const cond = a.title[0].toLowerCase() < b.title[0].toLowerCase()
+                if(cond) {
+                  return 1;
+                }else {
+                  return -1;
+                }
+              }
+
+          );
+
+          break;
+        }
+        case "Name Descending": {
+          this.items = this.items.sort(
+            (a, b) => {
+              const cond = a.title[0].toLowerCase() < b.title[0].toLowerCase()
+                if(cond) {
+                  return 1;
+                }else {
+                  return -1;
+                }
+              }
+          );
+
+          break;
+        }
+        case "Date Added Ascending": {
+          this.items = this.items.sort(
+            (a, b) => {
+              const cond = a.dateAdded < b.dateAdded
+                if(cond) {
+                  return 1;
+                }else {
+                  return -1;
+                }
+              }
+          );
+
+          break;
+        }
+        case "Date Added Descending": {
+          this.items = this.items.sort(
+            (a, b) => {
+              const cond = a.dateAdded < b.dateAdded
+                if(cond) {
+                  return 1;
+                }else {
+                  return -1;
+                }
+              }
+          );
+          break;
+        }
+      }
+      console.log("ITEEEMS ", this.items);
     },
     prepareCategory(recipes) {
       let categoriesMap = [];
       let items = [];
 
-      recipes.forEach(r => {
-        r.categories.forEach(rCategory => {
-          if(categoriesMap && !categoriesMap.find(c => c === rCategory.name))
+      recipes.forEach((r) => {
+        r.categories.forEach((rCategory) => {
+          if (categoriesMap && !categoriesMap.find((c) => c === rCategory.name))
             categoriesMap.push(rCategory.name);
 
-          if(rCategory.name.toLowerCase() === this.title.toLowerCase()){
+          if (rCategory.name.toLowerCase() === this.title.toLowerCase()) {
             items.push(r);
           }
-        })})
+        });
+      });
 
-        this.availableCategories = categoriesMap;
-        this.items = items;
+      this.availableCategories = categoriesMap;
+      this.items = items;
     },
     getRecipes() {
       fetch("http://127.0.0.1:8000/api/recipes/", {
         method: "GET",
         headers: {
-          Authorization: `Token ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
         },
       })
         .then((res) => res.json())
         .then((res) => {
           this.recipes = res;
           this.prepareCategory(res);
-          console.log('danwdnawkdnaw', this.recipes)
+          console.log("danwdnawkdnaw", this.recipes);
         })
         .catch((err) => console.log(err));
     },
-    getUserFavorites() {
-
-    }
-  }
+  },
 };
 </script>
 
@@ -216,6 +329,7 @@ if(!this.$cookies.isKey("recipes-token")){
   display: flex;
   flex-direction: row;
   margin-top: 90px;
+  height: 100%;
 }
 
 .navWrapper {

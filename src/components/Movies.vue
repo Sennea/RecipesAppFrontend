@@ -58,7 +58,7 @@ export default {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Token ${this.token}`
+                'Authorization': `Bearer ${this.token}`
             },
         })
         .then(() => {
@@ -77,7 +77,7 @@ export default {
       fetch("http://127.0.0.1:8000/api/recipes/", {
         method: "GET",
         headers: {
-          Authorization: `Token ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
         },
       })
         .then((res) => res.json())

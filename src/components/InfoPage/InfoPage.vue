@@ -37,24 +37,24 @@
       <div class="stepsWrapper">
         <h3>Steps....</h3>
         <div class="scrollableSection">
-          <div v-for="step in item.steps" :key="`step-${step.id}`" class="step">
+          <div v-for="step in item.steps" :key="`step-${step.order}`" class="step">
             <input
               class="input"
               type="checkbox"
-              :id="`step-${step.id}`"
+              :id="`step-${step.order}`"
               v-model="checked"
-              @click="changeStepStatus(step.id)"
+              @click="changeStepStatus(step.order)"
             />
             <label
               :class="['label', step.finished && 'labelShadowed']"
-              :for="`step-${step.id}`"
-              >{{ step.step }}</label
+              :for="`step-${step.order}`"
+              >{{ step.description }}</label
             >
           </div>
 
           <div class="commentsWrapper">
             <div
-              v-for="comment in comments"
+              v-for="comment in item.comments"
               class="singleComment"
               :key="comment.id"
             >
@@ -90,21 +90,21 @@
       <div class="ingredientsWrapper scrollableSection">
         <div
           class="ingredient"
-          v-for="ingredient in item.ingredients"
-          :key="`ingredient-${ingredient.id}`"
+          v-for="(ingredient) in item.ingredients"
+          :key="`ingredient-${ingredient.ingredient}`"
         >
           <input
             class="input"
             type="checkbox"
-            :id="`ingredient-${ingredient.id}`"
-            @click="changeIngredientStatus(ingredient.id)"
+            :id="`ingredient-${ingredient.ingredient}`"
+            @click="changeIngredientStatus(ingredient.ingredient)"
           />
           <label
             :class="['label', ingredient.finished && 'labelCrossed']"
-            :for="`ingredient-${ingredient.id}`"
+            :for="`ingredient-${ingredient.ingredient}`"
           >
             {{
-              ingredient.ingredient.name +
+              ingredients.find(ing => ing.id === ingredient.ingredient).name +
               " " +
               ingredient.quantity +
               " " +
@@ -131,6 +131,7 @@ export default {
     this.token = this.$cookies.get("recipes-token");
     this.getRecipe(this.$route.params.id);
     this.recipeId = this.$route.params.id;
+    this.fetchAvailableIngredients();
   },
   data() {
     return {
@@ -140,9 +141,24 @@ export default {
       recipeId: 0,
       userId: 1,
       newCommentContent: "",
+      ingredients: [],
     };
   },
   methods: {
+        fetchAvailableIngredients() {
+      fetch(`http://127.0.0.1:8000/api/ingredients/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          this.ingredients = res;
+        })
+        .catch((err) => console.log(err));
+    },
     manageHeartHover(index) {
       this.hearts = this.hearts.map((h, i) => (i <= index ? 1 : 0));
     },
@@ -157,8 +173,10 @@ export default {
       this.hearts = this.hearts.map((h, i) => (i <= index ? 1 : 0));
     },
     changeIngredientStatus(index) {
+      console.log('INGREDIENTS ', this.item.ingredients);
+      console.log('INDEX', index)
       const ingredients = this.item.ingredients.map((ing) =>
-        ing.id === index ? { ...ing, finished: !ing.finished } : ing
+        ing.ingredient === index ? { ...ing, finished: !ing.finished } : ing
       );
       this.item = {
         ...this.item,
@@ -166,8 +184,10 @@ export default {
       };
     },
     changeStepStatus(index) {
+      console.log('IIINSEC', index);
+      console.log('DAJSKDAKWDAw', this.item.steps)
       const steps = this.item.steps.map((step) =>
-        step.id === index ? { ...step, finished: !step.finished } : step
+        step.order === index ? { ...step, finished: !step.finished } : step
       );
       this.item = {
         ...this.item,
@@ -179,16 +199,14 @@ export default {
       this.addRating(index+1);
     },
     addRating(amount) {
-      console.log('HELLO')
-      fetch(`http://127.0.0.1:8000/api/recipes/${this.recipeId}/rate_recipe/`, {
+      fetch(`http://127.0.0.1:8000/api/recipes/${this.recipeId}/rate/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
         },
         body: JSON.stringify({
           stars: amount,
-          recipe: this.recipeId,
         }),
       })
         .then((res) => res.json())
@@ -202,16 +220,14 @@ export default {
         .catch((err) => console.log(err));
     },
     postComment() {
-      fetch(`http://127.0.0.1:8000/api/comments/`, {
+      fetch(`http://127.0.0.1:8000/api/recipes/${this.recipeId}/comments/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
         },
         body: JSON.stringify({
           content: this.newCommentContent,
-          user: this.userId,
-          recipe: this.recipeId,
         }),
       })
         .then((res) => res.json())
@@ -221,39 +237,19 @@ export default {
         .catch((err) => console.log(err));
     },
 
-    getRecipeComments(id) {
-      fetch("http://127.0.0.1:8000/api/comments/", {
-        method: "GET",
-        headers: {
-          Authorization: `Token ${this.token}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((res) => {
-          const categoryComments = [];
-          res.forEach((comment) => {
-            if (comment.recipe == id) {
-              categoryComments.push(comment);
-            }
-          });
-          console.log("CASCAS", categoryComments);
-          this.comments = categoryComments;
-        })
-        .catch((err) => console.log(err));
-    },
     getRecipe(id) {
       fetch(`http://127.0.0.1:8000/api/recipes/${id}/`, {
         method: "GET",
         headers: {
-          Authorization: `Token ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
         },
       })
         .then((res) => res.json())
         .then((res) => {
+          console.log('dWADADW', res);
           this.item = res;
           const rating = Math.floor(res.avg_rating);
           this.manageHeartHover(rating - 1);
-          this.getRecipeComments(id);
         })
         .catch((err) => console.log(err));
     },

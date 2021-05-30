@@ -1,5 +1,5 @@
 <template>
-  <div v-if="item" :class="['wrapper', itemHovered && 'wrapperDarker']" @click="$emit('clicked')">
+  <div v-if="item" :class="['wrapper', itemHovered && 'wrapperDarker']" @click="manageItemClick()">
     <div
       :class="[
         'recipeItemWrapper',
@@ -37,7 +37,8 @@
         <div
           @mouseenter="manageHeartHover()"
           @mouseleave="manageHeartHover()"
-          :class="[heartHovered ? 'heartWhite' : 'heartDark']"
+          @click="manageHeartClick()"
+          :class="[heartActive? 'heartWhite' : (heartHovered || item.user_favourite ? 'heartWhite' : 'heartDark')]"
         >
           <HeartFull />
         </div>
@@ -69,9 +70,22 @@ export default {
     return {
       heartHovered: false,
       itemHovered: false,
+      heartActive: false
     };
   },
+  created() {
+    console.log('JDWJODADwa', this.item);
+  },
   methods: {
+    manageHeartClick() {
+      this.heartActive = true;
+      this.$emit('addToFavourites')
+    },
+    manageItemClick() {
+      if(!this.heartHovered){
+        this.$emit('clicked')
+      }
+    },
     manageHeartHover() {
       this.heartHovered = !this.heartHovered;
       this.itemHovered = this.heartHovered;

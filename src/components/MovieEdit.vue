@@ -35,7 +35,7 @@ export default {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Token ${this.token}`
+            Authorization: `Bearer ${this.token}`
           },
           body: JSON.stringify({
             title: this.localMovie.title,
@@ -52,7 +52,7 @@ export default {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Token ${this.token}`
+            Authorization: `Bearer ${this.token}`
           },
           body: JSON.stringify({
             title: this.localMovie.title,

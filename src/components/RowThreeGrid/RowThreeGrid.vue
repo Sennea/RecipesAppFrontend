@@ -3,13 +3,13 @@
     <GridHeader :title="title" @clicked="showAllClicked(title)" />
     <div class="rowThreeGridWrapper">
             <div class="slot">
-                <RecipeItem @clicked="$emit('itemClicked', items[0].id)" gridStyle="square"  :item="items[0]"/>
+                <RecipeItem @addToFavourites="$emit('addToFavourites', items[0].id)" @clicked="$emit('itemClicked', items[0].id)" gridStyle="square"  :item="items[0]"/>
             </div>
             <div class="slot">
-                <RecipeItem @clicked="$emit('itemClicked', items[1].id)" gridStyle="square"  :item="items[1]"/>
+                <RecipeItem @addToFavourites="$emit('addToFavourites', items[1].id)" @clicked="$emit('itemClicked', items[1].id)" gridStyle="square"  :item="items[1]"/>
             </div>
             <div class="slot">
-                <RecipeItem @clicked="$emit('itemClicked', items[2].id)" gridStyle="square"  :item="items[2]"/>
+                <RecipeItem @addToFavourites="$emit('addToFavourites', items[2].id)" @clicked="$emit('itemClicked', items[2].id)" gridStyle="square"  :item="items[2]"/>
             </div>
     </div>
     

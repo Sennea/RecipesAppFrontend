@@ -4,17 +4,17 @@
     <div class="fourGridWrapper">
       <div class="rowWrapper">
         <div class="bigSlot" >
-          <RecipeItem @clicked="$emit('itemClicked', items[0].id)" :item="items[0]"/>
+          <RecipeItem  @addToFavourites="$emit('addToFavourites', items[0].id)" @clicked="$emit('itemClicked', items[0].id)" :item="items[0]"/>
         </div>
         <div class="smallSlot">
-          <RecipeItem @clicked="$emit('itemClicked', items[1].id)" size="small"  :item="items[1]" />
+          <RecipeItem @addToFavourites="$emit('addToFavourites', items[1].id)" @clicked="$emit('itemClicked', items[1].id)" size="small"  :item="items[1]" />
         </div>
       </div>
       <div class="rowWrapper">
         <div class="smallSlot">
-          <RecipeItem @clicked="$emit('itemClicked', items[2].id)" size="small"  :item="items[2]" />
+          <RecipeItem @addToFavourites="$emit('addToFavourites', items[2].id)" @clicked="$emit('itemClicked', items[2].id)" size="small"  :item="items[2]" />
         </div>
-        <div class="bigSlot"><RecipeItem @clicked="$emit('itemClicked', items[3].id)"  :item="items[3]"/></div>
+        <div class="bigSlot"><RecipeItem @addToFavourites="$emit('addToFavourites', items[3].id)" @clicked="$emit('itemClicked', items[3].id)"  :item="items[3]"/></div>
       </div>
     </div>
   </div>

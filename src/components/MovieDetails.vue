@@ -42,7 +42,7 @@ export default {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Token ${this.token}`
+                'Authorization': `Bearer ${this.token}`
             },
             body: JSON.stringify({
                 stars: rate + 1

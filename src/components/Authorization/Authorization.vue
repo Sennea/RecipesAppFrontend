@@ -2,6 +2,14 @@
   <div  class="authWrapper" >
     <Input
       class="authInputWrapper"
+      label="Mail"
+      type="text"
+      :error="mailError"
+      @change="updateMail($event)"
+    />
+    <Input
+      :v-if="!loginMode"
+      class="authInputWrapper"
       label="Login"
       type="text"
       :error="loginError"
@@ -34,9 +42,11 @@ export default {
   data() {
     return {
       username: "",
+      mail: "",
       password: "",
       loginMode: true,
       loginError: "",
+      mailError: "",
       passwordError: "",
       validationError: "",
     };
@@ -53,21 +63,23 @@ export default {
       this.validationError = "";
       this.username = event && event.target.value;
     },
+    updateMail(event) {
+      this.mailError = "";
+      this.validationError = "";
+      this.mail = event && event.target.value;
+    },
     updatePassword(event) {
       this.passwordError = "";
       this.validationError = "";
       this.password = event && event.target.value;
     },
     login() {
-      fetch(`http://127.0.0.1:8000/auth/`, {
+      fetch(`http://127.0.0.1:8000/api/auth/login/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Basic ${btoa(`${this.mail}:${this.password}`)}`
         },
-        body: JSON.stringify({
-          username: this.username,
-          password: this.password,
-        }),
       })
         .then((res) => res.json())
         .then((res) => {
@@ -75,8 +87,8 @@ export default {
           this.loginError = this.username ? "" : "Login is required";
           this.passwordError = this.password ? "" : "Password is required";
           console.log('RES ', res)
-          if (res.token) {
-            this.$cookies.set("recipes-token", res.token, "12h");
+          if (res.access) {
+            this.$cookies.set("recipes-token", res.access, "12h");
             this.$router.push("/");
           } else {
             this.validationError =
@@ -92,6 +104,7 @@ export default {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          email: this.mail,
           username: this.username,
           password: this.password,
         }),
@@ -110,6 +123,9 @@ export default {
 .authWrapper {
   padding: 100px 0 40px;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 p {
   cursor: pointer;

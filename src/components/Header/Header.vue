@@ -32,11 +32,11 @@ export default {
     }
   },
   created() {
-    this.loggedIn = this.$cookies.isKey("recipes-token")
+    this.loggedIn = this.$cookies.isKey("recipes-token");
   },
   methods: {
     favorites() {
-      this.$router.push("/favorites");
+      this.$router.push({path: "/favorites", params: {favourites: true}});
     },
     logout() {
       this.$cookies.remove("recipes-token");
@@ -67,12 +67,13 @@ export default {
 <style scoped>
 .wrapper {
   min-height: 100px;
+  max-width: 800px;
   background-color: rgb(45, 115, 182);
   border-bottom-left-radius: 20%;
   border-bottom-right-radius: 20%;
   position: fixed;
   top: 0;
-  left: -17px;
+  left: 0;
   right: 0;
   z-index: 100000;
   display: flex;

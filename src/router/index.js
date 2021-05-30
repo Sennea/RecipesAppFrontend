@@ -30,12 +30,12 @@ const routes = [
     name: "AddRecipePage",
     component: () => import("../components/AddRecipePage"),
   },
-  // {
-  //   path: "/favorites",
-  //   name: "AllGrid",
-  //   props: {favorites: true},
-  //   component: () => import("../components/AllGrid"),
-  // },
+  {
+    path: "/favorites",
+    name: "Favourites",
+    props: true,
+    component: () => import("../components/Favourites"),
+  },
 ];
 
 const router = createRouter({

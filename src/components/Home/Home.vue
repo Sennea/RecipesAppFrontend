@@ -6,7 +6,6 @@
     <div class="appWrapper">
       <div class="topWrapper">
         <Input class="searchInput" label="Search" @change="updateSearchPhrase($event)" />
-        <p>Filter......</p>
       </div>
       <SearchResultsGrid @showAll="showAllClicked($event)" v-if="searchRecipes.length" :items="searchRecipes" />
       <RecipesCategoriesList :categoriesOfRecipes="categoriesOfRecipes"  />
@@ -38,6 +37,7 @@ export default {
       token: "",
       recipes: [],
       searchRecipes: [],
+      userFavourites: []
     };
   },
   methods: {
@@ -58,6 +58,8 @@ export default {
         }
       })
 
+      console.log('JOJOJO', searchRecipes)
+
       this.searchRecipes = searchRecipes;
     },
     movieClicked(movieId) {
@@ -73,7 +75,7 @@ export default {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
         },
       })
         .then(() => {
@@ -91,7 +93,6 @@ export default {
     prepareCategories(recipes) {
       let categoriesMap = [];
       let availableCategories= {};
-
       recipes.forEach(r => {
         r.categories.forEach(rCategory => {
           if(categoriesMap && !categoriesMap.find(c => c === rCategory.name))
@@ -110,7 +111,7 @@ export default {
       fetch("http://127.0.0.1:8000/api/recipes/", {
         method: "GET",
         headers: {
-          Authorization: `Token ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
         },
       })
         .then((res) => res.json())
@@ -140,6 +141,7 @@ export default {
   display: flex;
   flex-direction: row;
   margin-top: 90px;
+  height: 100%;
 }
 
 .navWrapper {
@@ -160,7 +162,7 @@ export default {
 }
 
 .searchInput {
-  flex-basis: 70%
+  flex-basis: 100%
 }
 
 .p {

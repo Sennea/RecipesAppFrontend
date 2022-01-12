@@ -173,8 +173,6 @@ export default {
       this.hearts = this.hearts.map((h, i) => (i <= index ? 1 : 0));
     },
     changeIngredientStatus(index) {
-      console.log('INGREDIENTS ', this.item.ingredients);
-      console.log('INDEX', index)
       const ingredients = this.item.ingredients.map((ing) =>
         ing.ingredient === index ? { ...ing, finished: !ing.finished } : ing
       );
@@ -184,8 +182,6 @@ export default {
       };
     },
     changeStepStatus(index) {
-      console.log('IIINSEC', index);
-      console.log('DAJSKDAKWDAw', this.item.steps)
       const steps = this.item.steps.map((step) =>
         step.order === index ? { ...step, finished: !step.finished } : step
       );
@@ -195,7 +191,6 @@ export default {
       };
     },
     ratingClicked(index) {
-      console.log('JOJOJ');
       this.addRating(index+1);
     },
     addRating(amount) {

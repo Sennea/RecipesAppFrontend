@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "start": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "core-js": "^3.6.5",
     "vue": "^3.0.0",
+    "vue-demi": "^0.12.1",
+    "vue-recaptcha": "^2.0.1",
     "vue-router": "^4.0.5",
     "vue3-cookies": "^1.0.1"
   },

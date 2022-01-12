@@ -22,8 +22,13 @@
       :error="passwordError"
       @change="updatePassword($event)"
     />
-    <button class="authButton" @click="login()" v-if="loginMode">Login</button>
-    <button class="authButton" @click="register()" v-else>Register</button>
+    <Recaptcha @captchaVerified="captchaVerified(true)" @captchaReset="captchaVerified(false)" sitekey="6LcN5NodAAAAAPeEs12v1dzgHlqKFQGzjJ8NJUvW">
+    <button>Click me</button>
+  </Recaptcha>
+    <div v-if="isCaptchaVerified">
+    <button  class="authButton" @click="login()" v-if="loginMode">Login</button>
+    <button  class="authButton" @click="register()" v-else>Register</button>
+    </div>
     <h4 class="inputError" :v-if="validationError">{{ validationError }}</h4>
 
     <p @click="loginMode = !loginMode">
@@ -36,8 +41,10 @@
 
 <script>
 import Input from "./Input.vue";
+import Recaptcha from '../Recaptcha/Recaptcha.vue';
+
 export default {
-  components: { Input },
+  components: { Input, Recaptcha },
   name: "Authorization",
   data() {
     return {
@@ -49,6 +56,7 @@ export default {
       mailError: "",
       passwordError: "",
       validationError: "",
+      isCaptchaVerified: false,
     };
   },
   created() {
@@ -58,6 +66,10 @@ export default {
     this.loginMode = this.$route.params.option === 'login';
   },
   methods: {
+    captchaVerified(val) {
+      console.log('captchaVerified')
+      this.isCaptchaVerified = val;
+    },
     updateLogin(event) {
       this.loginError = "";
       this.validationError = "";

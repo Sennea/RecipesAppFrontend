@@ -94,7 +94,7 @@ export default {
       this.itemHovered = !this.itemHovered;
     },
   },
-};
+}
 </script>
 
 <style scoped>

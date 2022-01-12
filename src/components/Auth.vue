@@ -9,16 +9,19 @@
       v-model="password"
       type="password"
     /><br />
+    <Recaptcha sitekey="6LeYoNodAAAAAK66vRmlU56SRp4-ZdpsqBEFg2DO">
+  </Recaptcha>
     <buttom @click="login()" v-if="loginMode">Login</buttom>
     <buttom @click="register()" v-else>Register</buttom>
-
     <p @click="loginMode = !loginMode">{{!loginMode ? 'Login now!' : `Don't have an account yet? Register now!`}}</p>
   </div>
 </template>
 
 
 <script>
+  import { Recaptcha } from '../Recaptcha';
 export default {
+    components: {Recaptcha},
     name: "Auth",
     data() {
         return {
